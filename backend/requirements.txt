@@ -2,3 +2,7 @@ groq
 python-dotenv
 pydantic
 pymongo
+uvicorn
+fastapi
+supabase
+python-jose[cryptography]

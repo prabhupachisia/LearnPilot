@@ -1,9 +1,11 @@
 import os
 from groq import Groq
+from pathlib import Path
 
 MODEL_NAME = "llama-3.1-70b-versatile"
 from dotenv import load_dotenv
-load_dotenv()
+env_path = Path(__file__).resolve().parents[2] / ".env"
+load_dotenv(dotenv_path=env_path)
 
 class LlamaClient:
     def __init__(self):
