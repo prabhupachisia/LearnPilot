@@ -1,7 +1,7 @@
 import os
 from groq import Groq
 
-MODEL_NAME = "llama-3.1-70b-versatile"
+MODEL_NAME = "llama-3.3-70b-versatile"
 
 class LlamaClient:
     def __init__(self):

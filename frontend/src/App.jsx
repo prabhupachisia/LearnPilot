@@ -9,6 +9,7 @@ import Explore from "./pages/Explore";
 import PathBuilder from "./pages/PathBuilder";
 import LearningPaths from "./pages/LearningPaths";
 import ProtectedLayout from "./components/ProtectedLayout";
+import DocChat from "./pages/DocChat";
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
 
@@ -27,6 +28,7 @@ function App() {
               <Route path="/explore" element={<Explore />} />
               <Route path="/pathbuilder" element={<PathBuilder />} />
               <Route path="/learning-paths" element={<LearningPaths />} />
+              <Route path="/chat" element={<DocChat />} />
             </Route>
           </Routes>
         </BrowserRouter>
