@@ -1,4 +1,4 @@
-from .llama_client import llama_client
+from .groq_client import llama_client
 from .prompts import PATH_OPTIMIZER_PROMPT
 
 
