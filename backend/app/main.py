@@ -1,29 +1,38 @@
-from fastapi import FastAPI, Depends
-from .database import supabase
-from .auth import verify_token
+from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
+from .routes import learningpath  # Ensure this import matches your folder structure
 
-app = FastAPI()
+app = FastAPI(title="LearnPilot AI API")
 
+# 1. CORS CONFIGURATION
+# Crucial for local development! This allows your Vite/React 
+# frontend (usually port 5173) to communicate with FastAPI (port 8000).
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # For production, replace with specific domains
+    allow_credentials=True,
+    allow_methods=["*"],  # Allows GET, POST, OPTIONS, etc.
+    allow_headers=["*"],
+)
+
+# 2. ROUTE REGISTRATION
+# This connects the /learning-path/generate endpoint you built
 
 @app.get("/")
 def root():
-    return {"message": "StudyMate API running"}
+    return {
+        "status": "online",
+        "message": "LearnPilot AI Engine is running",
+        "version": "1.0.0"
+    }
+
+# Optional: Global exception handler to capture AI service errors
+@app.exception_handler(Exception)
+async def global_exception_handler(request, exc):
+    return {
+        "error": "Internal Server Error",
+        "detail": str(exc)
+    }
 
 
-@app.post("/sync-user")
-def sync_user(user=Depends(verify_token)):
-
-    clerk_id = user["sub"]
-    email = user["email"]
-
-    existing = supabase.table("profiles").select("*").eq("id", clerk_id).execute()
-
-    if not existing.data:
-        supabase.table("profiles").insert({
-            "id": clerk_id,
-            "email": email,
-            "first_name": user.get("given_name"),
-            "last_name": user.get("family_name")
-        }).execute()
-
-    return {"status": "user synced"}
+app.include_router(learningpath.router)

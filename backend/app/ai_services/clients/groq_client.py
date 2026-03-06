@@ -2,6 +2,8 @@ import os
 from groq import Groq
 
 MODEL_NAME = "llama-3.1-70b-versatile"
+from dotenv import load_dotenv
+load_dotenv()
 
 class LlamaClient:
     def __init__(self):

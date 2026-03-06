@@ -8,265 +8,255 @@ import {
   Brain,
   Zap,
   Clock,
-  Calendar,
   Rocket,
+  Laptop,
+  Video,
+  GraduationCap,
 } from "lucide-react";
 
+import { useUser } from "@clerk/clerk-react";
+
 export default function PathBuilder() {
+  const { user } = useUser();
   const navigate = useNavigate();
-  const [step, setStep] = useState(1);
+  const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     goal: "",
-    experience: "",
-    timeCommitment: "",
+    experience: "beginner",
+    timeCommitment: "part-time",
+    style: "visual",
   });
 
-  const handleNext = () => {
-    if (step < 3) setStep(step + 1);
-    else generatePath();
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    if (!user) return alert("Please sign in to create a path");
+
+    setLoading(true);
+    console.log("🚀 Starting AI Generation & Database Save...");
+
+    const payload = {
+      goal: formData.goal,
+      experience: formData.experience,
+      timeCommitment: formData.timeCommitment,
+      style: formData.style,
+      userId: user.id, // Linking to the Clerk User ID
+    };
+
+    try {
+      // 1. Call your FastAPI backend
+      // PathBuilder.jsx
+      const response = await fetch(
+        "http://127.0.0.1:8000/learning-path/generate",
+        {
+          // Use 127.0.0.1 for stability
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify(payload),
+        },
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to generate learning path");
+      }
+
+      const savedPath = await response.json();
+
+      console.log("✅ Path saved in DB successfully:", savedPath);
+
+      // 2. Navigate to dashboard with the REAL data from the DB
+      navigate("/dashboard", {
+        state: {
+          roadmap: savedPath.roadmap_data,
+          goal: savedPath.goal,
+          pathId: savedPath.id,
+        },
+      });
+    } catch (error) {
+      console.error("❌ Error during generation:", error);
+      alert("Something went wrong. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const generatePath = () => {
-    navigate("/dashboard", { state: formData });
-  };
+  const SelectionCard = ({ icon: Icon, title, id, category, current }) => (
+    <button
+      type="button"
+      onClick={() => setFormData({ ...formData, [category]: id })}
+      className={`flex flex-col items-center gap-2 p-4 rounded-xl border-2 transition-all ${
+        current === id
+          ? "bg-emerald-500/10 border-emerald-500 text-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.1)]"
+          : "bg-slate-900 border-slate-800 text-slate-500 hover:border-slate-700 hover:text-slate-300"
+      }`}
+    >
+      <Icon size={20} />
+      <span className="text-xs font-bold uppercase tracking-tighter">
+        {title}
+      </span>
+    </button>
+  );
 
   return (
-    <div className="min-h-screen bg-slate-950 flex flex-col items-center justify-center p-6 font-sans text-slate-200">
-      {/* Background glow */}
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[600px] bg-emerald-500/10 rounded-full blur-[120px] pointer-events-none"></div>
+    <div className="min-h-[calc(100vh-64px)] bg-slate-950 flex items-center justify-center p-6 relative overflow-hidden">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-1/4 w-96 h-96 bg-emerald-600/5 blur-[120px] rounded-full" />
+      <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-teal-600/5 blur-[120px] rounded-full" />
 
-      <div className="w-full max-w-2xl relative z-10">
-        {/* Progress Bar */}
-        <div className="mb-12">
-          <div className="flex justify-between text-sm font-bold text-slate-500 mb-4 uppercase tracking-wider">
-            <span className={step >= 1 ? "text-emerald-400" : ""}>Goal</span>
-            <span className={step >= 2 ? "text-emerald-400" : ""}>
-              Experience
-            </span>
-            <span className={step >= 3 ? "text-emerald-400" : ""}>
-              Commitment
-            </span>
-          </div>
-          <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden flex">
-            <div
-              className={`h-full bg-gradient-to-r from-emerald-500 to-teal-400 transition-all duration-500`}
-              style={{ width: `${(step / 3) * 100}%` }}
-            ></div>
-          </div>
+      <form
+        onSubmit={handleSubmit}
+        className="w-full max-w-3xl bg-slate-900/40 backdrop-blur-md border border-slate-800 p-8 md:p-12 rounded-3xl relative z-10 shadow-2xl"
+      >
+        <div className="mb-10 text-center">
+          <h1 className="text-4xl font-black text-white mb-3 tracking-tight">
+            Configure Your Journey
+          </h1>
+          <p className="text-slate-400">
+            Our AI will architect a custom roadmap based on your profile.
+          </p>
         </div>
 
-        {/* Step 1: The Goal */}
-        {step === 1 && (
-          <div className="animate-fade-in-up">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-emerald-500/20 rounded-lg">
-                <Target className="text-emerald-400" size={24} />
-              </div>
-              <h2 className="text-3xl font-extrabold text-white">
-                What do you want to learn?
-              </h2>
-            </div>
-            <p className="text-slate-400 mb-8 text-lg">
-              Be specific. Our AI works best when it knows exactly where you
-              want to go.
-            </p>
-
+        <div className="space-y-10">
+          {/* Section 1: Goal */}
+          <div className="space-y-4">
+            <label className="flex items-center gap-2 text-emerald-400 font-bold text-sm uppercase tracking-widest">
+              <Target size={18} /> What is your primary goal?
+            </label>
             <input
+              required
               type="text"
-              autoFocus
-              placeholder="e.g., Become a Full-Stack React Developer"
-              className="w-full bg-slate-900 border-2 border-slate-700 focus:border-emerald-500 rounded-2xl p-6 text-xl text-white outline-none transition-all shadow-lg focus:shadow-[0_0_20px_rgba(16,185,129,0.2)] mb-8"
+              placeholder="e.g. Master Machine Learning with PyTorch"
+              className="w-full bg-slate-950 border border-slate-800 rounded-2xl px-6 py-4 text-xl text-white focus:outline-none focus:border-emerald-500 transition-all placeholder:text-slate-700"
               value={formData.goal}
               onChange={(e) =>
                 setFormData({ ...formData, goal: e.target.value })
               }
-              onKeyDown={(e) =>
-                e.key === "Enter" && formData.goal && handleNext()
-              }
             />
           </div>
-        )}
 
-        {/* Step 2: Experience Level */}
-        {step === 2 && (
-          <div className="animate-fade-in-up">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-emerald-500/20 rounded-lg">
-                <Brain className="text-emerald-400" size={24} />
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-10">
+            {/* Section 2: Experience */}
+            <div className="space-y-4">
+              <label className="flex items-center gap-2 text-emerald-400 font-bold text-sm uppercase tracking-widest">
+                <Brain size={18} /> Experience Level
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                <SelectionCard
+                  icon={BookOpen}
+                  title="Newbie"
+                  id="beginner"
+                  category="experience"
+                  current={formData.experience}
+                />
+                <SelectionCard
+                  icon={Zap}
+                  title="Familiar"
+                  id="intermediate"
+                  category="experience"
+                  current={formData.experience}
+                />
+                <SelectionCard
+                  icon={Rocket}
+                  title="Pro"
+                  id="advanced"
+                  category="experience"
+                  current={formData.experience}
+                />
               </div>
-              <h2 className="text-3xl font-extrabold text-white">
-                What's your current level?
-              </h2>
             </div>
-            <p className="text-slate-400 mb-8 text-lg">
-              We'll skip the basics if you already know them to avoid redundant
-              content.
-            </p>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            {/* Section 3: Time */}
+            <div className="space-y-4">
+              <label className="flex items-center gap-2 text-emerald-400 font-bold text-sm uppercase tracking-widest">
+                <Clock size={18} /> Weekly Commitment
+              </label>
+              <div className="grid grid-cols-3 gap-3">
+                <SelectionCard
+                  icon={Clock}
+                  title="Light"
+                  id="casual"
+                  category="timeCommitment"
+                  current={formData.timeCommitment}
+                />
+                <SelectionCard
+                  icon={Laptop}
+                  title="Steady"
+                  id="part-time"
+                  category="timeCommitment"
+                  current={formData.timeCommitment}
+                />
+                <SelectionCard
+                  icon={Rocket}
+                  title="Full"
+                  id="intensive"
+                  category="timeCommitment"
+                  current={formData.timeCommitment}
+                />
+              </div>
+            </div>
+          </div>
+
+          {/* Section 4: Learning Style */}
+          <div className="space-y-4">
+            <label className="flex items-center gap-2 text-emerald-400 font-bold text-sm uppercase tracking-widest">
+              <GraduationCap size={18} /> Preferred Learning Style
+            </label>
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
               {[
-                {
-                  id: "beginner",
-                  icon: BookOpen,
-                  title: "Beginner",
-                  desc: "Starting from scratch",
-                },
-                {
-                  id: "intermediate",
-                  icon: Zap,
-                  title: "Intermediate",
-                  desc: "I know the basics",
-                },
-                {
-                  id: "advanced",
-                  icon: Rocket,
-                  title: "Advanced",
-                  desc: "Looking for mastery",
-                },
-              ].map((level) => (
-                <button
-                  key={level.id}
-                  onClick={() =>
-                    setFormData({ ...formData, experience: level.id })
-                  }
-                  className={`p-6 rounded-2xl border-2 text-left transition-all duration-300 flex flex-col gap-3
-                    ${
-                      formData.experience === level.id
-                        ? "bg-emerald-500/10 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-                        : "bg-slate-900 border-slate-700 hover:border-slate-500 hover:bg-slate-800"
-                    }`}
-                >
-                  <level.icon
-                    size={28}
-                    className={
-                      formData.experience === level.id
-                        ? "text-emerald-400"
-                        : "text-slate-400"
-                    }
-                  />
-                  <div>
-                    <h3
-                      className={`font-bold text-lg ${formData.experience === level.id ? "text-emerald-400" : "text-white"}`}
-                    >
-                      {level.title}
-                    </h3>
-                    <p className="text-sm text-slate-500 mt-1">{level.desc}</p>
-                  </div>
-                </button>
+                { id: "visual", icon: Video, label: "Video First" },
+                { id: "reading", icon: BookOpen, label: "Docs/Articles" },
+                { id: "hands-on", icon: Code, label: "Projects" },
+                { id: "balanced", icon: Sparkles, label: "AI Mix" },
+              ].map((style) => (
+                <SelectionCard
+                  key={style.id}
+                  icon={style.icon}
+                  title={style.label}
+                  id={style.id}
+                  category="style"
+                  current={formData.style}
+                />
               ))}
             </div>
           </div>
-        )}
 
-        {/* Step 3: Time Commitment */}
-        {step === 3 && (
-          <div className="animate-fade-in-up">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="p-2 bg-emerald-500/20 rounded-lg">
-                <Clock className="text-emerald-400" size={24} />
-              </div>
-              <h2 className="text-3xl font-extrabold text-white">
-                How much time do you have?
-              </h2>
-            </div>
-            <p className="text-slate-400 mb-8 text-lg">
-              We'll pace the roadmap based on your weekly availability.
-            </p>
-
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              {[
-                {
-                  id: "casual",
-                  icon: Clock,
-                  title: "Casual",
-                  desc: "2-5 hours / week",
-                },
-                {
-                  id: "part-time",
-                  icon: Calendar,
-                  title: "Part-time",
-                  desc: "10-15 hours / week",
-                },
-                {
-                  id: "intensive",
-                  icon: Rocket,
-                  title: "Intensive",
-                  desc: "20+ hours / week",
-                },
-              ].map((time) => (
-                <button
-                  key={time.id}
-                  onClick={() =>
-                    setFormData({ ...formData, timeCommitment: time.id })
-                  }
-                  className={`p-6 rounded-2xl border-2 text-left transition-all duration-300 flex flex-col gap-3
-                    ${
-                      formData.timeCommitment === time.id
-                        ? "bg-emerald-500/10 border-emerald-500 shadow-[0_0_20px_rgba(16,185,129,0.2)]"
-                        : "bg-slate-900 border-slate-700 hover:border-slate-500 hover:bg-slate-800"
-                    }`}
-                >
-                  <time.icon
-                    size={28}
-                    className={
-                      formData.timeCommitment === time.id
-                        ? "text-emerald-400"
-                        : "text-slate-400"
-                    }
-                  />
-                  <div>
-                    {/* 👇 THIS IS THE FIXED LINE 👇 */}
-                    <h3
-                      className={`font-bold text-lg ${formData.timeCommitment === time.id ? "text-emerald-400" : "text-white"}`}
-                    >
-                      {time.title}
-                    </h3>
-                    <p className="text-sm text-slate-500 mt-1">{time.desc}</p>
-                  </div>
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Action Button */}
-        <div className="flex justify-between items-center mt-10">
-          {step > 1 ? (
-            <button
-              onClick={() => setStep(step - 1)}
-              className="text-slate-400 hover:text-white font-medium transition-colors"
-            >
-              Back
-            </button>
-          ) : (
-            <div></div>
-          )}
-
+          {/* Submit Button */}
           <button
-            onClick={handleNext}
-            disabled={
-              (step === 1 && !formData.goal) ||
-              (step === 2 && !formData.experience) ||
-              (step === 3 && !formData.timeCommitment)
-            }
-            className="group px-8 py-4 bg-emerald-500 text-slate-950 rounded-xl font-bold flex items-center gap-2 hover:bg-emerald-400 transition-all disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-[0_0_20px_rgba(16,185,129,0.4)]"
+            type="submit"
+            disabled={!formData.goal || loading}
+            className="w-full py-5 bg-emerald-500 hover:bg-emerald-400 disabled:bg-slate-800 disabled:text-slate-600 text-slate-950 font-black text-xl rounded-2xl transition-all flex items-center justify-center gap-3 shadow-xl shadow-emerald-500/10"
           >
-            {step === 3 ? (
-              <>
-                <Sparkles size={20} /> Generate My AI Path
-              </>
+            {loading ? (
+              <span className="flex items-center gap-2 animate-pulse">
+                <Sparkles className="animate-spin" /> Analyzing Requirements...
+              </span>
             ) : (
               <>
-                Continue{" "}
-                <ArrowRight
-                  size={20}
-                  className="group-hover:translate-x-1 transition-transform"
-                />
+                {" "}
+                Launch My Path <ArrowRight />{" "}
               </>
             )}
           </button>
         </div>
-      </div>
+      </form>
     </div>
+  );
+}
+
+// Simple internal Code icon since lucide-react was already imported
+function Code({ size }) {
+  return (
+    <svg
+      width={size}
+      height={size}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+    >
+      <polyline points="16 18 22 12 16 6" />
+      <polyline points="8 6 2 12 8 18" />
+    </svg>
   );
 }
