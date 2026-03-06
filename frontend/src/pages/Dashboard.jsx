@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
-import { useLocation } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router-dom";
 import { UserButton } from "@clerk/clerk-react";
 import { 
   CheckCircle2, Circle, PlaySquare, BookOpen, 
-  ExternalLink, Code, BrainCircuit, Sparkles, MessageSquare
+  ExternalLink, Code, BrainCircuit, Sparkles, MessageSquare, Brain,
+  Compass, LayoutDashboard
 } from "lucide-react";
 
 // 🛑 MOCK DATA: Your backend teammate will replace this with their API response!
@@ -49,6 +50,7 @@ const MOCK_ROADMAP = [
 ];
 
 export default function Dashboard() {
+  const navigate = useNavigate();
   const location = useLocation();
   const userGoal = location.state?.goal || "Become a Data Scientist";
   
@@ -93,9 +95,9 @@ export default function Dashboard() {
         
         {/* Fake Terminal Loading Steps */}
         <div className="mt-8 w-80 bg-slate-900 border border-slate-800 rounded-lg p-4 font-mono text-sm text-emerald-400/70">
-          <p className="animate-pulse">> Extracting required skills...</p>
-          <p className="animate-pulse" style={{ animationDelay: '0.5s' }}>> Curating top resources...</p>
-          <p className="animate-pulse" style={{ animationDelay: '1s' }}>> Building timeline nodes...</p>
+          <p className="animate-pulse">{`> Extracting required skills...`}</p>
+          <p className="animate-pulse" style={{ animationDelay: '0.5s' }}>{`> Curating top resources...`}</p>
+          <p className="animate-pulse" style={{ animationDelay: '1s' }}>{`> Building timeline nodes...`}</p>
         </div>
       </div>
     );
@@ -109,18 +111,18 @@ export default function Dashboard() {
       
       {/* 1. TOP NAVBAR */}
       <header className="h-16 bg-slate-900 border-b border-slate-800 flex items-center justify-between px-6 shrink-0 z-10 shadow-md">
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-3 cursor-pointer" onClick={() => navigate("/")}>
           <div className="p-1.5 bg-gradient-to-br from-emerald-500 to-teal-600 rounded-lg">
             <Sparkles size={20} className="text-slate-950" />
           </div>
-          <h1 className="font-bold text-xl text-slate-100 hidden sm:block">LearnPilot Dashboard</h1>
+          <h1 className="font-bold text-xl text-slate-100 hidden sm:block">LearnPilot</h1>
         </div>
 
         {/* Progress Bar in Nav */}
-        <div className="flex-1 max-w-md mx-8 hidden md:block">
+        <div className="flex-1 max-w-md mx-8 hidden lg:block">
           <div className="flex justify-between text-xs font-semibold text-slate-400 mb-1.5 uppercase tracking-wider">
-            <span>Goal: {userGoal}</span>
-            <span className="text-emerald-400">{progress}% Completed</span>
+            <span className="truncate pr-4">Goal: {userGoal}</span>
+            <span className="text-emerald-400 whitespace-nowrap">{progress}% Completed</span>
           </div>
           <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
             <div 
@@ -129,6 +131,19 @@ export default function Dashboard() {
             ></div>
           </div>
         </div>
+
+        {/* Navigation Links */}
+        <nav className="hidden md:flex items-center gap-6 mr-6">
+          <button className="flex items-center gap-2 text-emerald-400 font-bold">
+            <LayoutDashboard size={18} /> My Path
+          </button>
+          <button 
+            onClick={() => navigate("/explore")}
+            className="flex items-center gap-2 text-slate-400 hover:text-emerald-400 transition-colors font-medium"
+          >
+            <Compass size={18} /> Explore
+          </button>
+        </nav>
 
         <UserButton afterSignOutUrl="/" appearance={{ elements: { userButtonAvatarBox: "w-9 h-9 border-2 border-slate-700 hover:border-emerald-500 transition-colors" } }} />
       </header>
@@ -193,21 +208,30 @@ export default function Dashboard() {
                 </p>
               </div>
 
-              {/* Mark Complete Action */}
-              <button 
-                onClick={() => toggleComplete(activeNode.id)}
-                className={`shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300
-                  ${completedNodes.includes(activeNode.id) 
-                    ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-500/30' 
-                    : 'bg-slate-800 text-white hover:bg-emerald-600 hover:text-white shadow-lg hover:shadow-emerald-500/20'}
-                `}
-              >
-                {completedNodes.includes(activeNode.id) ? (
-                  <><CheckCircle2 size={20} /> Completed</>
-                ) : (
-                  <><Circle size={20} /> Mark as Complete</>
-                )}
-              </button>
+              {/* Actions */}
+              <div className="flex gap-3">
+                <button 
+                  onClick={() => navigate("/quiz")}
+                  className="shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 bg-purple-600 text-white hover:bg-purple-500 shadow-lg hover:shadow-purple-500/20"
+                >
+                  <Brain size={20} /> Test Knowledge
+                </button>
+
+                <button 
+                  onClick={() => toggleComplete(activeNode.id)}
+                  className={`shrink-0 flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300
+                    ${completedNodes.includes(activeNode.id) 
+                      ? 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 hover:bg-emerald-500/30' 
+                      : 'bg-slate-800 text-white hover:bg-emerald-600 hover:text-white shadow-lg hover:shadow-emerald-500/20'}
+                  `}
+                >
+                  {completedNodes.includes(activeNode.id) ? (
+                    <><CheckCircle2 size={20} /> Completed</>
+                  ) : (
+                    <><Circle size={20} /> Mark as Complete</>
+                  )}
+                </button>
+              </div>
             </div>
 
             <hr className="border-slate-800 my-10" />
@@ -246,9 +270,9 @@ export default function Dashboard() {
               ))}
             </div>
 
-            {/* HACKATHON BONUS: Fake AI Chat Mentor */}
+            {/* AI Chat Mentor */}
             <div className="mt-12 bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700 rounded-2xl p-6 relative overflow-hidden">
-              <div className="absolute -right-10 -top-10 text-slate-800 opacity-50">
+              <div className="absolute -right-10 -top-10 text-slate-800 opacity-50 pointer-events-none">
                 <MessageSquare size={120} />
               </div>
               <div className="relative z-10">
@@ -262,7 +286,7 @@ export default function Dashboard() {
                   <input 
                     type="text" 
                     placeholder="E.g., Explain Neural Networks like I'm 5..." 
-                    className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500 text-white"
+                    className="flex-1 bg-slate-950 border border-slate-700 rounded-xl px-4 py-3 text-sm focus:outline-none focus:border-purple-500 text-white shadow-inner"
                   />
                   <button className="bg-purple-600 hover:bg-purple-500 text-white px-6 py-3 rounded-xl font-bold transition-colors shadow-lg shadow-purple-500/20">
                     Ask
