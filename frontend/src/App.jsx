@@ -1,22 +1,16 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
-import Quiz from "./pages/Quiz";
-import Explore from "./pages/Explore";
-import {
-  ClerkProvider,
-  ClerkLoaded,
-  SignedIn,
-  SignedOut,
-} from "@clerk/clerk-react";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { ClerkProvider, ClerkLoaded } from "@clerk/clerk-react";
+
+import "./index.css";
 
 import Home from "./pages/Home";
-import PathBuilder from "./pages/PathBuilder";
 import Dashboard from "./pages/Dashboard";
+import Explore from "./pages/Explore";
+import PathBuilder from "./pages/PathBuilder";
+import LearningPaths from "./pages/LearningPaths";
+import ProtectedLayout from "./components/ProtectedLayout";
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
-
-if (!CLERK_PUBLISHABLE_KEY) {
-  throw new Error("Missing Publishable Key");
-}
 
 function App() {
   return (
@@ -24,69 +18,16 @@ function App() {
       <ClerkLoaded>
         <BrowserRouter>
           <Routes>
-            {/* Public Route */}
+            {/* Public */}
             <Route path="/" element={<Home />} />
 
-            {/* Protected Onboarding Route (Wizard) */}
-            <Route
-              path="/onboarding"
-              element={
-                <>
-                  <SignedIn>
-                    <PathBuilder />
-                  </SignedIn>
-                  <SignedOut>
-                    <Navigate to="/" replace />
-                  </SignedOut>
-                </>
-              }
-            />
-
-            {/* Protected Quiz Route */}
-            <Route
-              path="/quiz"
-              element={
-                <>
-                  <SignedIn>
-                    <Quiz />
-                  </SignedIn>
-                  <SignedOut>
-                    <Navigate to="/" replace />
-                  </SignedOut>
-                </>
-              }
-            />
-
-            {/* Protected Explore Route */}
-            <Route
-              path="/explore"
-              element={
-                <>
-                  <SignedIn>
-                    <Explore />
-                  </SignedIn>
-                  <SignedOut>
-                    <Navigate to="/" replace />
-                  </SignedOut>
-                </>
-              }
-            />
-
-            {/* Protected Dashboard Route */}
-            <Route
-              path="/dashboard"
-              element={
-                <>
-                  <SignedIn>
-                    <Dashboard />
-                  </SignedIn>
-                  <SignedOut>
-                    {/* Bounces logged-out users back to the home URL cleanly */}
-                    <Navigate to="/" replace />
-                  </SignedOut>
-                </>
-              }
-            />
+            {/* Protected Layout */}
+            <Route element={<ProtectedLayout />}>
+              <Route path="/dashboard" element={<Dashboard />} />
+              <Route path="/explore" element={<Explore />} />
+              <Route path="/pathbuilder" element={<PathBuilder />} />
+              <Route path="/learning-paths" element={<LearningPaths />} />
+            </Route>
           </Routes>
         </BrowserRouter>
       </ClerkLoaded>
