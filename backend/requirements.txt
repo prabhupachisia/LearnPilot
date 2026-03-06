@@ -6,3 +6,4 @@ uvicorn
 fastapi
 supabase
 python-jose[cryptography]
+numpy
