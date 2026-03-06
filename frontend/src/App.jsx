@@ -1,12 +1,10 @@
-import { BrowserRouter, Routes, Route, useNavigate } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom"; // <-- Add Navigate here
 import {
   ClerkProvider,
   SignedIn,
   SignedOut,
-  SignInButton,
-  UserButton,
 } from "@clerk/clerk-react";
-import LandingPage from "./pages/LandingPage";
+import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 
 const CLERK_PUBLISHABLE_KEY = import.meta.env.VITE_CLERK_PUBLISHABLE_KEY;
@@ -17,7 +15,7 @@ function App() {
       <BrowserRouter>
         <Routes>
           {/* Public Route */}
-          <Route path="/" element={<LandingPage />} />
+          <Route path="/" element={<Home />} />
 
           {/* Protected Route */}
           <Route
@@ -28,7 +26,8 @@ function App() {
                   <Dashboard />
                 </SignedIn>
                 <SignedOut>
-                  <LandingPage />
+                  {/* Bounces logged-out users back to the home URL cleanly */}
+                  <Navigate to="/" replace /> 
                 </SignedOut>
               </>
             }
