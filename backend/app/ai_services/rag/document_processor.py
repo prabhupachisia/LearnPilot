@@ -1,13 +1,41 @@
-def chunk_text(text, chunk_size=400, overlap=50):
+import re
 
-    words = text.split()
+
+def chunk_text(text: str, chunk_size: int = 400, overlap: int = 50):
+    """
+    Split text into overlapping chunks suitable for embeddings/RAG.
+    Uses sentence boundaries when possible for better semantic chunks.
+    """
+
+    if not text or not text.strip():
+        return []
+
+    # Normalize whitespace
+    text = re.sub(r"\s+", " ", text).strip()
+
+    # Split into sentences
+    sentences = re.split(r'(?<=[.!?]) +', text)
 
     chunks = []
+    current_chunk = []
+    current_length = 0
 
-    for i in range(0, len(words), chunk_size - overlap):
+    for sentence in sentences:
+        sentence_words = sentence.split()
+        sentence_length = len(sentence_words)
 
-        chunk = " ".join(words[i:i + chunk_size])
+        if current_length + sentence_length > chunk_size:
+            chunks.append(" ".join(current_chunk))
 
-        chunks.append(chunk)
+            # add overlap
+            overlap_words = current_chunk[-overlap:] if overlap < len(current_chunk) else current_chunk
+            current_chunk = overlap_words.copy()
+            current_length = len(current_chunk)
+
+        current_chunk.extend(sentence_words)
+        current_length += sentence_length
+
+    if current_chunk:
+        chunks.append(" ".join(current_chunk))
 
     return chunks

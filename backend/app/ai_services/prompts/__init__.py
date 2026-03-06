@@ -1,0 +1,5 @@
+from .assistant_prompts import LEARNING_ASSISTANT_PROMPT
+from .learning_path_prompts import LEARNING_PATH_PROMPT
+from .optimizer_prompts import PATH_OPTIMIZER_PROMPT
+from .project_prompts import PROJECT_GENERATOR_PROMPT
+from .resource_prompts import RESOURCE_RECOMMEND_PROMPT

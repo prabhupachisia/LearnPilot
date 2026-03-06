@@ -1,19 +1,33 @@
-from .groq_client import llama_client
-from .prompts import PATH_OPTIMIZER_PROMPT
+import json
+
+from ..clients import llama_client
+from ..prompts import PATH_OPTIMIZER_PROMPT
 
 
-def optimize_learning_path(existing_path: str, progress: str):
+def optimize_learning_path(
+    existing_path: str,
+    progress: str,
+    experience_level: str = "Beginner"
+):
     """
-    Improve an existing learning roadmap.
+    Analyze and optimize an existing learning roadmap based on user progress.
     """
 
     prompt = PATH_OPTIMIZER_PROMPT.format(
         path=existing_path,
-        progress=progress
+        progress=progress,
+        level=experience_level
     )
 
-    result = llama_client.generate(prompt)
+    response = llama_client.generate(prompt)
+
+    # Attempt to parse JSON output
+    try:
+        optimized_path = json.loads(response)
+    except Exception:
+        optimized_path = response
 
     return {
-        "optimized_path": result
+        "experience_level": experience_level,
+        "optimized_learning_path": optimized_path
     }

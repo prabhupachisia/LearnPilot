@@ -1,17 +1,29 @@
-from .groq_client import llama_client
-from .prompts import RESOURCE_RECOMMEND_PROMPT
+import json
+
+from ..clients import llama_client
+from ..prompts import RESOURCE_RECOMMEND_PROMPT
 
 
-def recommend_resources(topic: str):
+def recommend_resources(topic: str, level: str = "Beginner"):
     """
-    Recommend learning resources for a topic.
+    Recommend learning resources for a given topic.
     """
 
-    prompt = RESOURCE_RECOMMEND_PROMPT.format(topic=topic)
+    prompt = RESOURCE_RECOMMEND_PROMPT.format(
+        topic=topic,
+        level=level
+    )
 
-    result = llama_client.generate(prompt)
+    response = llama_client.generate(prompt)
+
+    # Try parsing JSON output from the model
+    try:
+        resources_data = json.loads(response)
+    except Exception:
+        resources_data = response
 
     return {
         "topic": topic,
-        "resources": result
+        "difficulty": level,
+        "resources": resources_data
     }

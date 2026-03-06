@@ -1,16 +1,39 @@
 LEARNING_PATH_PROMPT = """
-Create a structured learning roadmap.
+You are an expert learning path designer.
 
-Goal: {goal}
-Time Available: {time}
+Your task is to create a structured learning roadmap for a learner.
 
-Provide:
+Goal:
+{goal}
 
-Stages
-Topics per stage
-Suggested order
-Short description for each stage.
+Time Available:
+{time}
 
-If time available is short, create a condensed roadmap.
-Return structured bullet points.
+Instructions:
+- Organize the roadmap into progressive learning stages.
+- Each stage should focus on a specific level of understanding.
+- Ensure topics follow logical prerequisites.
+- Keep the roadmap practical and focused on real skills.
+- If time available is limited, prioritize essential topics and create a condensed plan.
+
+For each stage include:
+- stage_title
+- description
+- topics_to_learn
+- recommended_order
+
+Return the result in valid JSON format only.
+
+Example structure:
+
+{
+  "learning_path": [
+    {
+      "stage_title": "",
+      "description": "",
+      "topics_to_learn": [],
+      "recommended_order": []
+    }
+  ]
+}
 """
